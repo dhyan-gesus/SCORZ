@@ -10,7 +10,7 @@ const UI = {
   init() {
     const app = $('app');
     // player labels sit under the touch buttons and the menus; the scoreboard and flash sit over everything
-    app.innerHTML = this.tplLobby() + this.tplSpins() + this.tplLocker() + this.tplHowto() + this.tplProfile() + this.tplPass() + this.tplGoals() + Net.tpl() + this.tplDaily() + '<section id="friend-card" class="overlay" hidden><div class="dialog panel fc"><div class="fc-body"></div><button class="btn" id="fc-close" type="button">CLOSE</button></div></section>' + this.tplHud() + '<div id="labels"></div>' + this.tplCutin() + this.tplPause() + this.tplResults() + '<div id="scoreboard" class="panel" hidden></div><div id="flash"></div>' + Net.chatPopTpl() + this.tplEmotes();
+    app.innerHTML = this.tplLobby() + this.tplSpins() + this.tplLocker() + this.tplHowto() + this.tplProfile() + this.tplPass() + this.tplGoals() + Net.tpl() + this.tplDaily() + this.tplModes() + '<section id="friend-card" class="overlay" hidden><div class="dialog panel fc"><div class="fc-body"></div><button class="btn" id="fc-close" type="button">CLOSE</button></div></section>' + this.tplHud() + '<div id="labels"></div>' + this.tplCutin() + this.tplPause() + this.tplResults() + '<div id="scoreboard" class="panel" hidden></div><div id="flash"></div>' + Net.chatPopTpl() + this.tplEmotes();
     $('labels').style.pointerEvents = 'none'; $('scoreboard').style.pointerEvents = 'none';
     for (let i = 0; i < 14; i++) { const d = document.createElement('div'); d.className = 'flabel'; d.hidden = true; $('labels').appendChild(d); this.labels.push({ el: d, p: null, t: 0, text: '', color: '' }); }
     this.youLabel = document.createElement('div'); this.youLabel.className = 'flabel me'; this.youLabel.textContent = 'YOU'; this.youLabel.hidden = true; $('labels').appendChild(this.youLabel);
@@ -43,10 +43,10 @@ const UI = {
         <p class="tagline">Voxel football, 3v3 up to 5v5. Pick a style, find your Flow, climb from Wood to Obsidian.</p>
         <nav class="menu" aria-label="Main menu">
           <button class="btn blue" id="go-ranked" type="button">RANKED <span class="sub" id="rank-sub">WOOD</span></button>
-          <button class="btn" id="go-quick" type="button">QUICK MATCH <span class="sub">3V3 &middot; NO RANK CHANGE</span></button>
+          <button class="btn" id="go-quick" type="button">QUICK MATCH <span class="sub">4V4 &middot; NO RANK CHANGE</span></button>
           <button class="btn friends" id="go-online" type="button">PLAY WITH FRIENDS <span class="sub">ONLINE ROOM</span></button>
           <button class="btn hazard" id="go-lawless" type="button">LAWLESS <span class="sub">3V3 &middot; ITEMS</span></button>
-          <button class="btn featured" id="go-featured" type="button"><span id="feat-name">FEATURED</span> <span class="sub" id="feat-sub">NEW MODE IN 3:00:00</span></button>
+          <button class="btn featured" id="go-modes" type="button">MORE MODES <span class="sub">HILL &middot; VOLLEYS &middot; DUEL</span></button>
           <div class="meta-row"><button class="btn emerald" id="go-spins" type="button">SPINS <span class="sub">FROM 100</span></button><button class="btn" id="go-locker" type="button">LOCKER <span class="sub" id="locker-sub">ROOKIE</span></button><button class="btn pass" id="go-pass" type="button">GAME PASS <span class="sub" id="pass-sub">TIER 0 / 30</span></button></div>
           <div class="ghosts"><button class="btn ghost daily" id="go-daily" type="button">DAILY <i class="dot"></i></button><button class="btn ghost goals" id="go-goals" type="button">BLUEPRINTS <b class="bp-n" id="bp-n">0</b></button><button class="btn ghost" id="go-fk" type="button">FREE KICKS</button><button class="btn ghost" id="go-howto" type="button">HOW TO PLAY</button><button class="btn ghost" id="go-profile" type="button"><span>PROFILE<span class="ph-x"> &amp; HISTORY</span></span></button></div>
         </nav>
@@ -61,6 +61,7 @@ const UI = {
           <div class="label" id="pro-rec" style="grid-column:1/-1">0 W &middot; 0 D &middot; 0 L</div>
         </div>
         <p class="notice" id="lob-notice"></p>
+        <button class="gift" id="lob-gift" type="button" hidden>FREE GIFT: CODE <b>${GIFT_CODE}</b> IN PROFILE</button>
       </div>
     </section>`;
   },
@@ -105,6 +106,7 @@ const UI = {
             ${row(key('LEFT THUMB'), 'Touch anywhere on the left and drag to move. Push past the outer ring to sprint')}
             ${row(key('RIGHT THUMB'), 'Drag anywhere on the right to turn the camera. The crosshair is where shots go')}
             ${row(key('SHOOT'), 'Hold to charge, let go to shoot. Drag on it while holding to aim')}
+            ${row(key('CURVE'), 'While you hold SHOOT, push the move stick left or right to bend the shot. It still ends up where you aim')}
             ${row(key('PASS'), 'Tap to pass to the teammate nearest your aim. Hold for a lob. Without the ball it calls for it: your teammate looks up, then picks the pass')}
             ${row(key('FEINT') + key('TACKLE'), 'One button. With the ball it feints (a step-over nobody can tackle you through, every 5s), without it you slide')}
             ${row(key('JUMP'), 'Jump. With the ball it flicks it over a defender')}
@@ -121,6 +123,7 @@ const UI = {
             ${row(key('MOUSE'), 'Aim the camera. Click the pitch to lock the mouse')}
             ${row(key('SHIFT'), 'Sprint. It uses stamina. Run it empty and you are out of breath (the bar flashes red): no sprint and a slower jog until it is a third full. Stand still to get it back faster')}
             ${row(key('HOLD LMB'), 'Charge a shot, release to shoot where you aim')}
+            ${row(key('LMB') + key('A') + key('D'), 'Curve shot: hold A or D while you charge. The ball swings out and bends back in to where you aim, round the keeper')}
             ${row(key('RMB'), 'Pass to the teammate nearest your aim. Hold for a lob. Without the ball it calls for a pass: your teammate looks up, then picks one. Sprint into space for a through ball')}
             ${row(key('SPACE'), 'Jump. With the ball it flicks it over defenders')}
             ${row(key('C'), 'Feint: a step-over cut to the side. Nobody can tackle you through it. Once every 5 seconds')}
@@ -140,7 +143,7 @@ const UI = {
             ${row(key('L'), 'Shift lock: your player always faces where you look, so A and D step sideways with the ball in front. The camera sits over your shoulder')}
           </div></section>
           <section class="panel"><h3>CONTROLLER</h3><div class="ctrl">
-            ${row(key('L STICK'), 'Move')}${row(key('R STICK'), 'Camera')}${row(key('LB'), 'Sprint')}${row(key('RT'), 'Charge and shoot')}
+            ${row(key('L STICK'), 'Move')}${row(key('R STICK'), 'Camera')}${row(key('LB'), 'Sprint')}${row(key('RT'), 'Charge and shoot')}${row(key('RT') + key('L STICK'), 'Curve shot: push the left stick left or right while you charge')}
             ${row(key('LT') + key('RB'), 'Pass (hold for a lob)')}${row(key('A'), 'Jump / flick')}${row(key('B'), 'Feint')}${row(key('X'), 'Slide tackle')}
             ${row(key('D-PAD') , 'Left, Up, Right = abilities. Down = item')}${row(key('Y'), 'Flow')}${row(key('START'), 'Pause')}${row(key('VIEW'), 'Scoreboard')}${row(key('VIEW') + key('D-PAD'), 'Online: hold VIEW and press the D-pad for quick chat')}${row(key('D-PAD DOWN'), 'Emote wheel (not in Lawless), then the D-pad chooses and A plays it')}${row(key('R3'), 'Switch camera. When a replay is offered, R3 watches it')}
           </div></section>
@@ -166,9 +169,9 @@ const UI = {
             <li><b>Tutorial:</b> new to the game? The button at the top of this page walks you through every control, one at a time.</li>
             <li><b>Free kick battle:</b> still level after golden goal? 3 free kicks each, then sudden death. When they take one, you stand in the wall: jump at the right moment to block it. Winning the battle counts as a win.</li>
             <li><b>Free kicks</b> (on the start screen): 10 free kicks against a keeper and a wall. Turn the camera to aim, hold shoot for power, and try your shooting abilities. It keeps your best score. No rewards, just practice.</li>
-            <li><b>Featured mode</b> changes every 3 hours, the same for everyone: King of the Hill (hold the ball in the moving ring, a point a second, goals are worth 3), Volleys Only (only volleys and headers count: press JUMP with the ball to flick it up, then shoot it before it lands), 1v1 Duels (first to 3) and Lawless.</li>
+            <li><b>More modes</b> (the MORE MODES button): King of the Hill (hold the ball in the moving ring, a point a second, goals are worth 3), Volleys Only (only volleys and headers count: press JUMP with the ball to flick it up, then shoot it before it lands), 1v1 Duels (first to 3), Free Kicks and the Tutorial. One of them is FEATURED, and it changes every 3 hours.</li>
             <li><b>Rewards</b> (emeralds, XP, pass, GOALS) come from full-time matches: Quick Match, Ranked and Lawless. King of the Hill, Volleys and Duels are just for fun, unless you play them with friends: every friends match gives rewards. Leaving early gives nothing.</li>
-            <li><b>Team size:</b> Quick Match and Lawless are 3v3. Ranked is 3v3 at Wood and Stone, 4v4 at Iron and Gold, and 5v5 at Diamond and Obsidian.</li>
+            <li><b>Team size:</b> Quick Match is 4v4 with a winger. Lawless is 3v3. Ranked is 3v3 at Wood and Stone, 4v4 at Iron and Gold, and 5v5 at Diamond and Obsidian.</li>
             <li><b>Lawless</b> drops item blocks on the pitch. Rocket fists, boom blocks, slime, jetpacks. No rank change.</li>
             <li><b>Golden goal</b> if it is level at full time. Still level after 2 more minutes, it is a draw.</li>
           </ul></section>
@@ -289,7 +292,7 @@ const UI = {
       <div class="hud-em emer"><img class="px" id="hud-em-ico" alt=""><span id="hud-em">0</span></div>
       <div class="crosshair" id="xhair"></div>
       <div class="balltag" id="balltag" hidden>BALL</div>
-      <div class="charge" id="charge" hidden><i id="charge-fill"></i><span id="charge-txt">POWER</span></div>
+      <div class="charge" id="charge" hidden><i id="charge-fill"></i><b class="cmark" id="charge-cmark"></b><span id="charge-txt">POWER</span></div>
       <div class="toasts" id="toasts"></div>
       <div class="chatfeed" id="chatfeed" aria-live="polite"></div>
       <div class="awakeside" id="awakeside" hidden><span class="aw-name" id="aws-name"></span><div class="aw-track"><i id="aws-fill"></i></div><b id="aws-txt">0%</b><span class="key k">Z</span></div>
@@ -338,6 +341,23 @@ const UI = {
     for (const k in mv) if (E.has(k)) { E.delete(k); this.markEmote(this.emoteSel + mv[k]); Sfx.hover(); }
     if (E.has('PadA')) { E.delete('PadA'); this.pickEmote(this.emoteSel); return; }
     if (E.has('PadB')) this.toggleEmotes(false);
+  },
+  /** MORE MODES: every mode that is not on the main menu, just for fun (offline they give no rewards) */
+  tplModes() {
+    return `<section id="scr-modes" class="overlay" hidden>
+      <div class="dialog panel modes-box">
+        <h2>MORE MODES</h2>
+        <p class="label">JUST FOR FUN, SO NO REWARDS. QUICK MATCH, RANKED AND LAWLESS GIVE REWARDS.</p>
+        <div class="md-grid" id="md-grid"></div>
+        <button class="btn" id="md-close" type="button">CLOSE</button>
+      </div>
+    </section>`;
+  },
+  openModes() {
+    const desc = { koth: 'HOLD THE BALL IN THE RING FOR POINTS. GOALS ARE WORTH 3', volleys: 'ONLY VOLLEYS AND HEADERS COUNT', duel: 'YOU AND A KEEPER AGAINST ONE. FIRST TO 3 GOALS', freekick: 'PRACTISE FREE KICKS: AIM, CURVE AND POWER', tutorial: 'LEARN THE CONTROLS STEP BY STEP' };
+    const feat = featuredAt().mode;
+    $('md-grid').innerHTML = Object.keys(desc).map((k) => `<button class="btn md-card" type="button" data-mode="${k}">${MODES[k].name}${k === feat ? '<span class="tag">FEATURED</span>' : ''}<span class="sub">${desc[k]}</span></button>`).join('');
+    $('scr-modes').hidden = false;
   },
   tplDaily() {
     return `<section id="scr-daily" class="overlay" hidden>
@@ -439,7 +459,7 @@ const UI = {
       const t = b.textContent.trim();
       Sfx.press(/-(back|close)$/.test(b.id) || t === 'BACK' || t === 'CLOSE' ? 'back' : b.classList.contains('tab') ? 'tab' : 'go');
     }, true);
-    const pops = ['friend-card', 'scr-daily', 'scr-pause', 'emote-pop'].map((id) => $(id)).filter(Boolean);
+    const pops = ['friend-card', 'scr-daily', 'scr-modes', 'scr-pause', 'emote-pop'].map((id) => $(id)).filter(Boolean);
     const mo = new MutationObserver((list) => { for (const r of list) { const was = r.oldValue !== null, now = r.target.hidden; if (was !== now) { if (now) Sfx.close(); else Sfx.open(); } } });
     for (const el of pops) mo.observe(el, { attributes: true, attributeFilter: ['hidden'], attributeOldValue: true });
   },
@@ -449,7 +469,9 @@ const UI = {
     click('go-ranked', () => Game.startMatch('ranked'));
     click('go-quick', () => Game.startMatch('quick'));
     click('go-lawless', () => Game.startMatch('lawless'));
-    click('go-featured', () => Game.startMatch(featuredAt().mode));
+    click('go-modes', () => this.openModes());
+    click('md-close', () => { $('scr-modes').hidden = true; });
+    $('md-grid').addEventListener('click', (e) => { const b = e.target.closest('[data-mode]'); if (!b) return; $('scr-modes').hidden = true; Sfx.init(); Game.startMatch(b.dataset.mode); });
     click('go-spins', () => this.openSpins());
     click('go-locker', () => this.openLocker());
     click('go-howto', () => this.show('howto'));
@@ -469,6 +491,7 @@ const UI = {
     click('lob-profile', () => this.show('profile'));
     $('lob-profile').addEventListener('keydown', (e) => { if (e.code === 'Enter' || e.code === 'Space') { e.preventDefault(); this.show('profile'); } });
     click('profile-back', () => this.show('lobby'));
+    click('lob-gift', () => { this.show('profile'); $('pf-code').value = GIFT_CODE; $('pf-code').focus(); });
     $('pf-code-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const r = redeemCode(Save.data, $('pf-code').value);
@@ -563,18 +586,10 @@ const UI = {
     if (!Save.ok) notes.push('<span>This browser is blocking storage, so progress will not be saved after you close the page.</span>');
     if (Touch.on) notes.push('<span class="n-touch">' + (window.innerHeight > window.innerWidth ? 'Touch controls are on. Turn your phone sideways for a much wider view of the pitch.' : 'Touch controls are on. Left thumb moves, right thumb aims and shoots.') + '</span>');
     $('lob-notice').innerHTML = notes.join(' ');
+    $('lob-gift').hidden = Save.data.codes.includes(codeHash(GIFT_CODE)); // gone once you used it
     const fsb = $('btn-fs');
     fsb.hidden = !(Touch.on && Touch.fsAvailable());
     fsb.textContent = Touch.isFs() ? 'EXIT FULLSCREEN' : 'FULLSCREEN';
-  },
-  /** the featured slot: this mode's name and the countdown to the next one (ticks once a second) */
-  tickFeatured() {
-    const f = featuredAt(), sec = Math.ceil(f.left / 1000);
-    if (sec === this._featSec && f.mode === this._featMode) return;
-    this._featSec = sec; this._featMode = f.mode;
-    const hms = Math.floor(sec / 3600) + ':' + String(Math.floor(sec / 60) % 60).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0');
-    $('feat-name').textContent = MODES[f.mode].name;
-    $('feat-sub').textContent = (MODES[f.mode].rewards ? 'FEATURED' : 'NO REWARDS') + ' · NEXT IN ' + hms;
   },
   /* ---------- HUD ---------- */
   buildHud(m) {
@@ -624,7 +639,7 @@ const UI = {
   setText(id, v) { const c = this.hudCache; if (c[id] !== v) { c[id] = v; $(id).textContent = v; } },
   updateHud(m, dt) {
     const p = m.human; if (!p) return;
-    FKHud.update(m); TutHud.update(m);
+    FKHud.update(m); TutHud.update(m); ShotHud.update(m);
     this.setText('sc0', String(m.score[0])); this.setText('sc1', String(m.score[1]));
     if (m.tut) { this.setText('clock', Math.min(m.tut.step + 1, TUT_STEPS.length) + '/' + TUT_STEPS.length); this.setText('clock-sub', 'TUTORIAL'); }
     else if (m.fk && m.fk.battle) { this.setText('clock', m.fk.bs[0] + '-' + m.fk.bs[1]); this.setText('clock-sub', 'FK BATTLE'); }
@@ -670,8 +685,11 @@ const UI = {
       ch.hidden = false;
       const lob = !p.charging;
       ch.classList.toggle('lob', lob);
+      const cv = lob ? 0 : p.shotCurve || 0, curl = Math.abs(cv) >= CURVE_MIN; // A/D (the stick) while charging: a curve shot
+      ch.classList.toggle('curl', curl);
       $('charge-fill').style.width = (lob ? 100 : Math.max(28, p.charge * 100)).toFixed(0) + '%';
-      this.setText('charge-txt', lob ? 'LOB' : p.charge >= 1 ? 'MAX POWER' : 'POWER');
+      $('charge-cmark').style.left = (50 + clamp(cv, -1, 1) * 50).toFixed(1) + '%';
+      this.setText('charge-txt', lob ? 'LOB' : curl ? (cv < 0 ? 'CURVE LEFT' : 'CURVE RIGHT') + (p.charge >= 1 ? ' MAX' : '') : p.charge >= 1 ? 'MAX POWER' : 'POWER');
     } else ch.hidden = true;
     $('xhair').style.filter = m.aimOnTarget ? 'drop-shadow(0 0 0 #ffcb3d)' : '';
     $('xhair').classList.toggle('on', m.aimOnTarget);
@@ -955,7 +973,8 @@ const UI = {
     const slots = $('lk-slots');
     slots.hidden = tab !== 'skin';
     if (tab === 'skin') slots.innerHTML = `<button class="tab" type="button" role="tab" data-slot="tone" aria-selected="${this.skinSlot === 'tone'}">SKIN</button>` + SKIN_SLOTS.map((sl) => `<button class="tab" type="button" role="tab" data-slot="${sl.id}" aria-selected="${this.skinSlot === sl.id}">${sl.name}</button>`).join('');
-    const ids = tab === 'club' ? CLUB_IDS : tab === 'style' ? STYLE_IDS : tab === 'flow' ? ['NONE'].concat(FLOW_IDS)
+    const byRar = (M) => (a, b) => RARITIES.indexOf(M[a].rarity) - RARITIES.indexOf(M[b].rarity); // Rare first, Generational last
+    const ids = tab === 'club' ? CLUB_IDS : tab === 'style' ? STYLE_IDS.slice().sort(byRar(STYLES)) : tab === 'flow' ? ['NONE'].concat(FLOW_IDS.slice().sort(byRar(FLOWS)))
       : this.skinSlot === 'tone' ? SKIN_TONES.map((t, i) => 'TONE' + i)
       : [SKIN_SLOTS.find((sl) => sl.id === this.skinSlot).base].concat(LOCKER_SKIN_IDS.filter((k) => SKINS[k].slot === this.skinSlot).sort((a, b) => RARITIES.indexOf(SKINS[a].rarity) - RARITIES.indexOf(SKINS[b].rarity)));
     const grid = $('locker-grid');

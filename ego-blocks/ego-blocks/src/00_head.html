@@ -178,6 +178,9 @@ img.px, canvas.px { image-rendering: pixelated; image-rendering: crisp-edges; }
 .equip-row b { font-family: var(--font-display); font-size: 24px; font-weight: 400; }
 .notice { max-width: 400px; font-size: 18px; color: var(--text); text-shadow: 2px 2px 0 var(--ink); margin: 0; text-align: right; }
 .notice:empty { display: none; }
+.gift { font: inherit; font-size: 17px; color: #ffe066; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; text-shadow: 2px 2px 0 var(--ink); text-align: right; }
+.gift b { color: #fff; font-weight: inherit; }
+@media (hover: hover) { .gift:hover { color: #fff; } }
 /* narrow screens: one column, the player stands between the title and the buttons */
 @media (max-width: 860px) {
   #scr-lobby {
@@ -189,7 +192,7 @@ img.px, canvas.px { image-rendering: pixelated; image-rendering: crisp-edges; }
   #scr-lobby > *, .lobby-main > * { grid-column: 1; grid-row: auto; }
   .title { order: 1; } .tagline { order: 2; } .lob-stage { order: 3; height: clamp(230px, 36vh, 440px); } .menu { order: 4; } .lobby-foot { order: 5; }
   .lobby-foot { justify-self: stretch; justify-items: stretch; }
-  .notice { text-align: left; }
+  .notice, .gift { text-align: left; }
 }
 
 /* sub screens */
@@ -346,6 +349,13 @@ body.touch #emote-pop .key, body.touch #emote-pop .em-pad { display: none; }
 .btn.ghost.daily .dot { display: none; position: absolute; top: 4px; right: 3px; width: 8px; height: 8px; background: var(--emerald); box-shadow: 0 0 8px var(--emerald); animation: blink .8s steps(2) infinite; }
 .btn.ghost.daily.ready .dot { display: block; }
 .daily-box { width: min(520px, 100%); }
+.modes-box { width: min(640px, 100%); gap: 12px; }
+.md-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.md-card { display: grid; justify-items: start; align-content: start; gap: 6px; position: relative; font-size: 26px; padding: 10px 12px 13px; }
+.md-card .sub { white-space: normal; line-height: 1.35; }
+.md-card .tag { position: absolute; top: -9px; right: 8px; font-family: var(--font-label); font-size: 10px; letter-spacing: .08em; background: #ffcb3d; color: #2b1b00; padding: 3px 6px; border: 2px solid var(--ink); }
+@media (max-width: 560px) { .md-grid { grid-template-columns: 1fr; } .md-card { font-size: 22px; } }
+@media (max-height: 460px) { .modes-box { width: min(760px, 100%); padding: 12px 14px; gap: 8px; } .modes-box h2 { font-size: 40px; } .md-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; } .md-card { font-size: 19px; padding: 6px 8px 8px; gap: 4px; } .md-card .sub { font-size: 9px; } #md-close { font-size: 24px; padding: 4px 14px 8px; } }
 .dl-card { background: var(--slate-2); padding: 12px; display: grid; gap: 8px; }
 .dl-card > div { display: grid; gap: 6px; justify-items: start; }
 .dl-big { font-family: var(--font-display); font-weight: 400; font-size: 30px; line-height: 1; color: var(--gold); }
@@ -433,6 +443,9 @@ body.touch #chat-pop { bottom: auto; top: calc(56px + env(safe-area-inset-top, 0
 .charge { left: 50%; top: calc(50% + 26px); transform: translateX(-50%); width: 120px; height: 12px; background: var(--ink); border: 2px solid var(--ink); }
 .charge i { display: block; height: 100%; width: 0%; background: var(--gold); }
 .charge.lob i { background: var(--blue-light); }
+.charge .cmark { display: none; position: absolute; top: -5px; bottom: -5px; width: 4px; margin-left: -2px; left: 50%; background: #7cf2ff; border: 1px solid var(--ink); }
+.charge.curl .cmark { display: block; }
+.charge.curl i { background: #7cf2ff; }
 .charge span { position: absolute; top: 14px; left: 0; right: 0; text-align: center; font-family: var(--font-label); font-size: 10px; letter-spacing: .1em; }
 .dock { left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: grid; justify-items: center; gap: 8px; }
 .flowbar { width: 420px; max-width: 70vw; display: grid; gap: 3px; }
@@ -764,6 +777,7 @@ body.touch .howto .touchsec { order: -1; }
   .equip-row { padding-top: 4px; margin-top: 1px; gap: 5px; }
   .equip-row b { font-size: 18px; }
   .notice { font-size: 14px; text-align: left; max-width: none; }
+  .gift { font-size: 14px; text-align: left; }
   .notice .n-touch { display: none; }
   .menu .btn.hazard { text-shadow: 2px 2px 0 var(--ink); }
   #scr-pause .dialog { width: min(800px, 100%); }

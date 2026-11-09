@@ -706,7 +706,7 @@ const TUT_STEPS = [
   { id: 'ball', title: 'GET THE BALL', k: 'RUN INTO THE BALL TO TAKE IT', pad: 'RUN INTO THE BALL TO TAKE IT', touch: 'RUN INTO THE BALL TO TAKE IT' },
   { id: 'pass', title: 'PASS', k: 'RIGHT MOUSE PASSES TO YOUR TEAMMATE. HOLD IT FOR A LOB', pad: 'LT PASSES TO YOUR TEAMMATE. HOLD IT FOR A LOB', touch: 'TAP PASS TO PASS TO YOUR TEAMMATE. HOLD IT FOR A LOB' },
   { id: 'back', title: 'ONE MORE TIME', k: 'YOUR TEAMMATE PASSES IT BACK. GO AND GET IT', pad: 'YOUR TEAMMATE PASSES IT BACK. GO AND GET IT', touch: 'YOUR TEAMMATE PASSES IT BACK. GO AND GET IT' },
-  { id: 'shoot', title: 'SHOOT', k: 'AIM AT THE GOAL WITH THE MOUSE. HOLD LEFT MOUSE FOR POWER, LET GO TO SHOOT', pad: 'AIM WITH THE RIGHT STICK. HOLD RT FOR POWER, LET GO TO SHOOT', touch: 'DRAG TO AIM. HOLD SHOOT FOR POWER, LET GO TO FIRE' },
+  { id: 'shoot', title: 'SHOOT', k: 'AIM AT THE GOAL WITH THE MOUSE. HOLD LEFT MOUSE FOR POWER, LET GO TO SHOOT. HOLD A OR D AS WELL TO CURVE IT', pad: 'AIM WITH THE RIGHT STICK. HOLD RT FOR POWER, LET GO TO SHOOT. PUSH THE LEFT STICK SIDEWAYS TO CURVE IT', touch: 'DRAG TO AIM. HOLD SHOOT FOR POWER, LET GO TO FIRE. PUSH THE STICK SIDEWAYS TO CURVE IT' },
   { id: 'feint', title: 'FEINT', k: 'WITH THE BALL, PRESS C TO STEP OVER. NOBODY CAN TACKLE YOU WHILE YOU DO', pad: 'WITH THE BALL, PRESS B TO STEP OVER. NOBODY CAN TACKLE YOU WHILE YOU DO', touch: 'WITH THE BALL, TAP FEINT TO STEP OVER. NOBODY CAN TACKLE YOU WHILE YOU DO' },
   { id: 'tackle', title: 'TACKLE', k: 'THEY HAVE THE BALL. GET CLOSE AND PRESS F TO SLIDE IN AND WIN IT', pad: 'THEY HAVE THE BALL. GET CLOSE AND PRESS X TO SLIDE IN AND WIN IT', touch: 'THEY HAVE THE BALL. GET CLOSE AND TAP TACKLE TO SLIDE IN AND WIN IT' },
   { id: 'ability', title: 'ABILITIES', k: 'YOUR STYLE HAS 3 ABILITIES. PRESS Q, E OR R TO USE ONE', pad: 'YOUR STYLE HAS 3 ABILITIES. PRESS THE D-PAD LEFT, UP OR RIGHT', touch: 'YOUR STYLE HAS 3 ABILITIES. TAP ONE OF THE ROUND ABILITY BUTTONS' },
@@ -722,6 +722,10 @@ const FK_TYPES = {
   dip: { name: 'DIP', sp: [19, 27], curve: 4, g: 1.75, desc: 'UP OVER THE WALL, THEN DOWN' },
 };
 const FK_TYPE_IDS = Object.keys(FK_TYPES);
+/** curve shots in open play: hold A/D (the stick) while you charge. The ball starts out to one side and bends back to
+    where you aimed. CURVE_ANGLE: how far out it starts at full curve (radians), CURVE_SLOW: speed lost at full curve,
+    CURVE_MIN: less input than this is a straight shot (a stick that wobbles a little) */
+const CURVE_ANGLE = 0.26, CURVE_SLOW = 0.08, CURVE_MIN = 0.2;
 const FK_TOL = 0.08; // how far from the perfect power you can be (the green zone on the power bar)
 /** the perfect power for a distance: further out needs more */
 const fkIdeal = (D) => clamp(0.42 + (D - 16) / 12 * 0.36, 0.4, 0.86);
@@ -730,7 +734,7 @@ const SETUPS_5 = { defensive: { name: 'ULTRA DEFENSIVE', roles: ['GK', 'DEF', 'D
 /** the most attacking role first: you play it, and it takes the kickoff */
 const ROLE_ORDER = ['ST', 'FW', 'MID', 'LW', 'RW', 'DEF', 'DEF2'];
 const leadRole = (roles) => roles.filter((r) => r !== 'GK').sort((a, b) => ROLE_ORDER.indexOf(a) - ROLE_ORDER.indexOf(b))[0];
-const teamSizeFor = (mode, rp) => { if (mode === 'duel') return 2; if (mode !== 'ranked') return 3; const t = tierOf(rp); return t >= 4 ? 5 : t >= 2 ? 4 : 3; };
+const teamSizeFor = (mode, rp) => { if (mode === 'duel') return 2; if (mode === 'quick') return 4; if (mode !== 'ranked') return 3; const t = tierOf(rp); return t >= 4 ? 5 : t >= 2 ? 4 : 3; };
 /* the featured mode changes every 3 hours on a fixed schedule from the clock (UTC), so everyone sees the same one */
 const FEATURED = ['koth', 'volleys', 'duel', 'lawless'], FEATURED_MS = 3 * 3600 * 1000;
 function featuredAt(now = Date.now()) { const k = Math.floor(now / FEATURED_MS); return { mode: FEATURED[((k % FEATURED.length) + FEATURED.length) % FEATURED.length], left: (k + 1) * FEATURED_MS - now }; }
@@ -782,8 +786,12 @@ function codeHash(s, seed = 1405) {
   return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
 }
 const CODES = {
-  yszaepofxo: { name: 'TESTER PACK', give: 'all' }, // the owner's tester code: every style, Flow and skin, emeralds and blueprints
+  '17g64u9rm49': { name: 'TESTER PACK', give: 'all' }, // the owner's tester code (secret, never shown): every style, Flow and skin, emeralds and blueprints
+  yszaepofxo: { name: 'TESTER PACK', give: 'all', retired: true }, // the old tester code: no new uses, but saves that used it keep getting new things
+  wnof5bzx9y: { name: 'KICKOFF GIFT', emeralds: 500 }, // the public gift code, shown at the bottom of the lobby (GIFT_CODE)
+  '298x98i7fpe': { name: 'HIDDEN GIFT', emeralds: 1000, bp: 10 }, // the easter egg: written on one advert board in a corner of the stadium
 };
+const GIFT_CODE = 'KICKOFF';
 /** every style, Flow and skin you can own. Returns how many were new */
 function unlockAll(d) {
   const n = d.styles.length + d.flows.length + d.skins.length;
@@ -799,7 +807,7 @@ function codeTopUp(d) {
 function redeemCode(d, text) {
   if (!codeNorm(text)) return { ok: false, msg: 'TYPE A CODE FIRST' };
   const h = codeHash(text), c = CODES[h];
-  if (!c) return { ok: false, msg: 'THAT CODE DOES NOT WORK' };
+  if (!c || (c.retired && !d.codes.includes(h))) return { ok: false, msg: 'THAT CODE DOES NOT WORK' };
   if (d.codes.includes(h)) {
     if (c.give !== 'all') return { ok: false, msg: 'YOU ALREADY USED THAT CODE' };
     const n = unlockAll(d); // used before: it still gives anything new from updates, but no more emeralds
@@ -811,7 +819,9 @@ function redeemCode(d, text) {
     d.emeralds += 99999; d.bp += 999;
   }
   if (c.emeralds) d.emeralds += c.emeralds;
-  return { ok: true, msg: c.name + ' UNLOCKED' + (c.give === 'all' ? ': EVERY STYLE, FLOW AND SKIN, +99999 EMERALDS, +999 BLUEPRINTS' : '') };
+  if (c.bp) d.bp += c.bp;
+  const gift = [c.emeralds && '+' + c.emeralds + ' EMERALDS', c.bp && '+' + c.bp + ' BLUEPRINTS'].filter(Boolean).join(', ');
+  return { ok: true, msg: c.name + (c.give === 'all' ? ' UNLOCKED: EVERY STYLE, FLOW AND SKIN, +99999 EMERALDS, +999 BLUEPRINTS' : gift ? ': ' + gift : ' UNLOCKED') };
 }
 const SPIN_COST = { style: 200, flow: 150, skin: 100 }; // emeralds per spin
 const BP_COST = { Rare: 2, Epic: 4, Legendary: 7, Mythic: 12, Generational: 20 };

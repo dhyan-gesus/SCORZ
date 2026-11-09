@@ -250,7 +250,7 @@ class Player {
       if (this.isGK) base *= 0.96;
       if (this.exhausted) base *= OUT_OF_BREATH;
       if (ownsBall) base *= 0.94;
-      if (this.charging) base *= 0.62;
+      if (this.charging) base *= lerp(0.5, 0.25, clamp(this.charge, 0, 1)); // winding up a shot: the bigger the shot, the more you plant your feet
       if (st === 'hold') base *= 0.6;
       maxSpeed = this.setPiece || this.fkHold || this.inWall ? 0 : base * m.speed; // a throw-in, corner or free kick taker stands still
       if (sprinting && m.stamDrain > 0) {
@@ -314,7 +314,9 @@ class Player {
     if (az > F.L - 0.45 && az < F.L + F.GD + 0.6 && ax < F.GW + F.POST + 0.45 && this.pos.y < F.GH + 0.6) {
       const s = sgn(this.pos.z);
       const inside = ax < F.GW + F.POST - 0.1;
+      const side = F.GW + F.POST + 0.45 - ax, back = F.L + F.GD + 0.6 - az; // how far into the goal from the side and from behind
       if (inside && az < F.L + 0.4) { this.pos.z = s * (F.L - 0.45); this.vel.z = 0; }
+      else if (az >= F.L + 0.4 && back < side) { this.pos.z = s * (F.L + F.GD + 0.6); if (this.vel.z * s < 0) this.vel.z = 0; } // behind the goal: the back of the net stops you (no jump to the side)
       else if (az >= F.L + 0.4) { this.pos.x = sgn(this.pos.x) * (F.GW + F.POST + 0.45); this.vel.x = 0; }
       else { this.pos.z = s * (F.L - 0.45); }
     }
