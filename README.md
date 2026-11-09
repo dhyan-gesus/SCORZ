@@ -5,18 +5,20 @@
 ## Features
 
 - Fast 3D football with keyboard, controller, and phone touch controls
-- 10 player styles, each with abilities
+- 21 player styles, each with abilities
 - Ranked play, Flow, skins, clubs, kits, and a game pass
 - Quick matches, featured modes, replays, and item-based Lawless matches
 - Online rooms for playing with friends
 
 ## Play
 
-Open [`docs/index.html`](docs/index.html) in Chrome or Edge. The built game is a single file and can be played offline.
+**Play in your browser: https://scorz.onrender.com**
+
+Or open [`ego-blocks/ego-blocks/docs/index.html`](ego-blocks/ego-blocks/docs/index.html) in Chrome or Edge. The built game is a single file and can be played offline.
 
 ## Run locally
 
-Install [Node.js](https://nodejs.org/) (LTS), then open this project folder in a terminal and run:
+Install [Node.js](https://nodejs.org/) (LTS), then open the game folder (`ego-blocks/ego-blocks`) in a terminal and run:
 
 ```bash
 npm install
